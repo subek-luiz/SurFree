@@ -12,7 +12,7 @@ from torchvision import transforms as T
 from torchvision.io import read_image
 from surfree import SurFree
 
-
+# Get the model Imagenet with wrapper
 def get_model():
     model = torchvision.models.resnet18(pretrained=True).eval()
     mean = torch.Tensor([0.485, 0.456, 0.406])
@@ -20,10 +20,12 @@ def get_model():
     normalizer = torchvision.transforms.Normalize(mean=mean, std=std)
     return torch.nn.Sequential(normalizer, model).eval()
 
+# Get labels for Imagenet data
 def get_imagenet_labels():
     response = requests.get("https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json")
     return eval(response.content)
 
+# Define CLI arguments
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output_folder", "-o", default="results_test/", help="Output folder")
@@ -37,7 +39,7 @@ def get_args():
 
 
 if __name__ == "__main__":
-    args = get_args()
+    args = get_args()                   
     ###############################
     output_folder = args.output_folder
     if not os.path.exists(output_folder):
@@ -67,20 +69,35 @@ if __name__ == "__main__":
     for img in os.listdir("./images"):
         X.append(transform(read_image(os.path.join("./images", img))).unsqueeze(0))
     X = torch.cat(X, 0) / 255
-    y = model(X).argmax(1)
+    y = model(X).argmax(1)       ## We get class labels for all images in iamges folder after passing through our model 
 
+    ################################ Targeted to bullfrog
+
+    print("Set target labels to 'vulture'")
+    target_class = None
+    for k, v in imagenet_labels.items():
+        if "vulture" in v:
+            target_class = int(k)
+            break
+
+    if target_class is None:
+        raise ValueError("Could not find vulture in ImageNet labels!")
+
+    target_labels = torch.full_like(y, fill_value=target_class)
+    
     ###############################
     print("Attack !")
     time_start = time.time()
 
-    f_attack = SurFree(**config["init"])
+    f_attack = SurFree(**config["init"])     ## Surfee object initialization with config intialization data passed as parameters
 
-    if torch.cuda.is_available():
+    if torch.cuda.is_available():           ## Migration to GPU before starting the attack
         model = model.cuda(0)
         X = X.cuda(0)
         y = y.cuda(0)
-
-    advs = f_attack(model, X, y, **config["run"])
+        target_labels = target_labels.cuda(0)
+#  target_labels=target_labels,
+    advs = f_attack(model, X, y, **config["run"])               ## THis is where attack happens      
     print("{:.2f} s to run".format(time.time() - time_start))
 
     ###############################
@@ -100,10 +117,10 @@ if __name__ == "__main__":
     ###############################
     print("Save Results")
     for image_i, o in enumerate(X):
-        o = np.array(o * 255).astype(np.uint8)
-        img_o = Image.fromarray(o.transpose(1, 2, 0), mode="RGB")
+        o = np.array((o * 255).cpu()).astype(np.uint8)                                                      # Enhancement done
+        img_o = Image.fromarray(o.transpose(1, 2, 0), mode="RGB")                                           
         img_o.save(os.path.join(output_folder, "{}_original.jpg".format(image_i)))
 
-        adv_i = np.array(advs[image_i] * 255).astype(np.uint8)
+        adv_i = np.array((advs[image_i] * 255).cpu()).astype(np.uint8)                                      # Enhancement done
         img_adv_i = Image.fromarray(adv_i.transpose(1, 2, 0), mode="RGB")
         img_adv_i.save(os.path.join(output_folder, "{}_adversarial.jpg".format(image_i)))

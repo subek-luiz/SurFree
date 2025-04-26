@@ -87,7 +87,7 @@ class SurFree():
     def get_nqueries(self):
         return {i: n for i, n in enumerate(self._nqueries)}
         
-    def __call__(self, model, X, labels, starting_points=None, **kwargs):
+    def __call__(self, model, X, labels, starting_points=None, target_labels=None, **kwargs):
 
         self._nqueries = torch.zeros(len(X)).to(X.device)
         self._history  = {i: [] for i in range(len(X))}
@@ -95,13 +95,23 @@ class SurFree():
 
         self.labels = labels
         self._model = model
+        
+        ## Added for targeted labels
+        self.target_labels = target_labels
+        
+        if self.target_labels is not None:
+            # Targeted attack: success when model predicts the target label
+            self._images_finished = model(X).argmax(1) == self.target_labels
+        else:
+            # Untargeted attack: success when model misclassifies
+            self._images_finished = model(X).argmax(1) != labels
 
         # Get Starting Point
         self.best_advs = get_init_with_noise(model, X, labels) if starting_points is None else starting_points
         self.X = X
 
         # Check if X are already adversarials.
-        self._images_finished = model(X).argmax(1) != labels
+        # self._images_finished = model(X).argmax(1) != labels
 
         print("Already advs: ", self._images_finished.cpu().tolist())
         self.best_advs = torch.where(atleast_kdim(self._images_finished, len(X.shape)), X, self.best_advs)
@@ -152,8 +162,15 @@ class SurFree():
         # Count if the vector is different from the null vector
         if self.quantification:
             perturbed = self._quantify(perturbed)
-        is_advs = self._model(perturbed).argmax(1) != self.labels
-
+            
+            
+        preds = self._model(perturbed).argmax(1)
+        if self.target_labels is not None:
+            is_advs = preds == self.target_labels  #  Targeted
+        else:
+            is_advs = preds != self.labels         #  Untargeted
+            
+            
         indexes = []
         for i, p in enumerate(perturbed):
             if not (p == 0).all() and not self._images_finished[i]:
@@ -226,8 +243,8 @@ class SurFree():
             delta = (self._binary_search(candidates[1],  boost=True) - self.X).flatten(1).norm(dim=1)
             theta_star = epsilon[0]
 
-            num = theta_star * (4 * delta - d * (torch.cos(theta_star.raw) + 3))
-            den = 4 * (2 * delta - d * (torch.cos(theta_star.raw) + 1))
+            num = theta_star * (4 * delta - d * (torch.cos(theta_star) + 3))                        # Enhancement done
+            den = 4 * (2 * delta - d * (torch.cos(theta_star) + 1))                                 # Enhancement done
 
             theta_hat = num / den
             q_interp = function_evolution(theta_hat)
