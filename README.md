@@ -122,9 +122,7 @@ For Full DCT:
 For 8×8 DCT:
 
 ```json
-{
 "dct_type": "8x8"
-}
 ```
 
 Attack Initialization Parameters:
@@ -132,10 +130,8 @@ Attack Initialization Parameters:
 Set maximum steps and query budget:
 
 ```json
-{
 "steps": 50,
 "max_queries": 500
-}
 ```
 
 4. Running the Attack
