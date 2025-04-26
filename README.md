@@ -5,11 +5,13 @@ Original Github: https://github.com/t-maho/SurFree
 
 --------
 
-#### What is SurFree?
+# What is SurFree?
 
 SurFree is a fast, surrogate-free, decision-based black-box adversarial attack. It generates adversarial examples without relying on gradient estimation or surrogate models, operating solely with top-1 label queries. SurFree uses a geometry-aware directional search strategy, combining efficient binary searches with structured random perturbations to quickly find minimal-distortion adversarial examples. It achieves high success rates with significantly fewer queries compared to traditional decision-based attacks, making it practical for real-world black-box threat scenarios.
 
-#### Basic Steps of the SurFree Algorithm
+---------
+
+# Basic Steps of the SurFree Algorithm
 
 1. Start from a Correctly Classified Image
 Begin with an input image 𝑥0 that the model classifies correctly.
@@ -33,7 +35,9 @@ Use a quadratic interpolation step to better estimate the minimal distortion poi
 
 7. Repeat Until Query Budget or Distortion Threshold Met are met to find the final adversarial.
 
-#### My contribution
+-----------
+
+# My contribution
 
 In SurFree, the Discrete Cosine Transform (DCT) is used to transform the input image into a lower-dimensional frequency space. In the original SurFree paper, a full-image DCT is applied.
 The main goal of using DCT is:
@@ -50,7 +54,7 @@ And searches for adversarial examples within this plane.
 
 By emphasizing low-frequency directions, the attack becomes more query-efficient because low-frequency perturbations are more likely to affect the classifier meaningfully.
 
-###### Experimental Anlysis: Full DCT vs 8x8 DCT
+### Experimental Anlysis: Full DCT vs 8x8 DCT
 
 In my experiments, I compared full DCT with 8×8 block DCT for SurFree:
 
@@ -61,7 +65,7 @@ Using 8×8 DCT increased both:
 - The average L₂ distortion of the generated adversarial examples,
 - The number of queries required to find adversarial samples.
 
-###### Reason for Increased Distrotion with 8x8 DCT 
+### Reason for Increased Distrotion with 8x8 DCT 
 
 When applying 8×8 DCT:
 
@@ -74,6 +78,8 @@ Thus:
 - The generated search directions are less clean,
 - The adversarial search becomes less efficient,
 - And both L₂ distortion and query budget increase compared to full DCT, where global low-frequency patterns are preserved.
+
+----------
 
 
 ## Setup and Run SurFree Attack
@@ -116,7 +122,9 @@ For Full DCT:
 For 8×8 DCT:
 
 ```json
+{
 "dct_type": "8x8"
+}
 ```
 
 Attack Initialization Parameters:
@@ -124,8 +132,10 @@ Attack Initialization Parameters:
 Set maximum steps and query budget:
 
 ```json
+{
 "steps": 50,
 "max_queries": 500
+}
 ```
 
 4. Running the Attack
@@ -133,9 +143,12 @@ Set maximum steps and query budget:
 ```bash
 python main.py
 ```
+---------------------
 
-### Models
+# Models
 The provided model is a pre-trained ResNet18 trained on the ImageNet dataset.
+
+-------------------------------
 
 ### Requirements
 
