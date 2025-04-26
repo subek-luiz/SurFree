@@ -1,6 +1,6 @@
-SurFree Implementation:
+# SurFree Implementation:
 
-Paper: https://arxiv.org/abs/2011.12807
+Paper: https://arxiv.org/abs/2011.12807  
 Original Github: https://github.com/t-maho/SurFree
 
 --------
