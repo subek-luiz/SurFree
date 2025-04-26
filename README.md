@@ -148,13 +148,14 @@ The provided model is a pre-trained ResNet18 trained on the ImageNet dataset.
 
 ### Requirements
 
-torch
-eagerpy
-scipy
-tqdm
-scikit-learn
-gitpython
-requests
-torchvision
-
+```bash
+torch==2.6.0
+eagerpy==0.30.0
+scipy==1.15.2
+tqdm==4.67.1
+scikit-learn==1.6.1
+gitpython==3.1.44
+requests==2.32.3
+torchvision==0.21.0
+```
 
