@@ -13,24 +13,24 @@ SurFree is a fast, surrogate-free, decision-based black-box adversarial attack. 
 
 # Basic Steps of the SurFree Algorithm
 
-1. Start from a Correctly Classified Image
+1. Start from a Correctly Classified Image: 
 Begin with an input image 𝑥0 that the model classifies correctly.
 
-2. Find Initial Boundary Point
+2. Find Initial Boundary Point: 
 Perform a binary search between 𝑥0 and a random misclassified point to find a point on the decision boundary (denoted x𝑏).
 
-3. Generate Random Direction
+3. Generate Random Direction: 
 Sample a random direction t in low frequency using DCT and generate the vecto v which is  orthogonalized against previous directions and u(unit vector from x0 to xb) for better exploration.
 
 
-4. Sign Search
+4. Sign Search: 
 Move slightly along the random direction 𝑣 (both positive and negative) to determine which way reduces distortion and find new xa.
 
-5. Update Boundary Point
+5. Update Boundary Point: 
 Perform a binary search along the chosen direction to find a new boundary point closer to xo.
 
 
-6. Optional Interpolation (Refinement)
+6. Optional Interpolation (Refinement): 
 Use a quadratic interpolation step to better estimate the minimal distortion point, improving efficiency (optional but improves results).
 
 7. Repeat Until Query Budget or Distortion Threshold Met are met to find the final adversarial.
